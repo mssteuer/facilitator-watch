@@ -26,7 +26,7 @@
     <div class="content">
     <div class="notice"><strong>Declarations only</strong><span>Advertised capabilities, not verified payments, settlement or uninterrupted availability.</span></div>
     {{if eq .View "overview"}}
-    <header class="page-head"><div><div class="eyebrow">x402 / the declaration index</div><h1>Facilitator<br>declarations.</h1><p class="subtitle">What endpoints advertise. What the checks actually tell us.</p></div><span class="snapshot">PAGE GENERATED<br><b>{{stamp .AsOf}}</b><small>Not a new evidence capture</small></span></header>
+    <header class="page-head"><div><div class="eyebrow">x402 / the declaration index</div><h1>Facilitator<br>declarations.</h1><p class="subtitle">What endpoints advertise. What the checks actually tell us.</p></div></header>
     <section class="summary" aria-label="Latest check summary">
       <article class="card stat"><span><i class="dot"></i> Valid declarations</span><strong>{{.Summary.Operational}} <small>/ {{.Summary.Total}}</small></strong><p>Latest check returned valid /supported</p></article>
       <article class="card stat"><span>Reachable endpoints</span><strong>{{.Summary.Reachable}}</strong><p>HTTP response received, any status</p></article>

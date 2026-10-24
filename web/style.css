@@ -49,9 +49,6 @@ h1 { font-size: clamp(44px, 6.5vw, 84px); font-weight: 600; line-height: 1; lett
 h2 { font-size: 21px; line-height: 1.25; margin: 0; font-weight: 650; letter-spacing: -.04em; }
 h3 { font-size: 17px; line-height: 1.4; margin: 0 0 10px; letter-spacing: -.025em; }
 .subtitle { margin: 0; color: var(--muted); font-size: 16px; max-width: 55ch; }
-.snapshot { flex: none; border-left: 1px solid var(--line); padding: 0 0 4px 24px; color: var(--muted); font: 10px/1.9 var(--mono); }
-.snapshot b { color: var(--ink); font-weight: 500; }
-.snapshot small { display: block; font-size: 10px; }
 .card { background: var(--paper); border: 1px solid var(--line); }
 .padded { padding: 22px 24px; }
 .padded > p { font-size: 13px; }
@@ -360,7 +357,6 @@ footer { margin-top: 48px; padding: 18px 0 28px; border-top: 2px solid var(--ink
   .notice { flex-direction: column; gap: 2px; margin-top: 16px; }
   .page-head { align-items: start; flex-direction: column; padding: 32px 0 26px; gap: 20px; }
   h1 { font-size: clamp(42px, 9vw, 64px); }
-  .snapshot { border-left: 0; padding: 0; }
   .section-head { align-items: start; flex-direction: column; gap: 6px; margin-top: 30px; }
   .toolbar { align-items: start; flex-direction: column; }
   /* One semantic table, stacked into ruled provider cards on small screens.
