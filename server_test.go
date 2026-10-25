@@ -108,7 +108,7 @@ func TestLiveHTMLAndAssets(t *testing.T) {
 				t.Fatalf("%s: %d %s", path, w.Code, w.Body.String())
 			}
 			body := w.Body.String()
-			for _, wanted := range []string{"Declarations only", "not verified payments, settlement or uninterrupted availability", "<style>", "--ink: #141414;", "NO PAYMENT OR SETTLEMENT TESTING"} {
+			for _, wanted := range []string{"Declarations only", "We never test payments", "<style>", "--ink: #141414;", "NO PAYMENT OR SETTLEMENT TESTING"} {
 				if !strings.Contains(body, wanted) {
 					t.Fatalf("missing %s", wanted)
 				}

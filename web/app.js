@@ -34,16 +34,16 @@ document.querySelectorAll('tr[data-href]').forEach(row => {
   root.innerHTML = `<div class="tl-controls"><div class="tl-ranges" role="group" aria-label="Time range"></div><div class="tl-nav"></div></div>
 <p class="tl-rangeline" aria-live="polite"></p>
 <div class="tl-state" role="status" hidden></div>
-<div class="tl-body"><p class="tl-hint" aria-hidden="true">← scroll the chart for earlier buckets</p>
+<div class="tl-body"><p class="tl-hint" aria-hidden="true">← scroll for earlier</p>
 <div class="tl-scroll" role="region" aria-label="Scheme declaration timeline" aria-describedby="scheme-timeline-kbd"><div class="tl-chart"></div></div>
 <p class="sr-only" id="scheme-timeline-kbd">Each lane is a row of time buckets. Use the arrow keys to move between buckets and lanes, Home and End to jump to the first or last bucket, and Enter to zoom into a bucket.</p>
 <div class="tl-legend">
-  <span><i class="tl-sw tl-s-a"></i>Advertised · bar height = share of checks</span>
+  <span><i class="tl-sw tl-s-a"></i>Advertised (height = share of checks)</span>
   <span><i class="tl-sw tl-s-f"></i>Failed check</span>
-  <span><i class="tl-sw tl-s-o"></i>Reachable, tuple not in declaration</span>
-  <span><i class="tl-sw tl-mk"></i>First seen in this bucket</span>
+  <span><i class="tl-sw tl-s-o"></i>Reachable, not listed</span>
+  <span><i class="tl-sw tl-mk"></i>First seen</span>
   <span><i class="tl-sw tl-nd"></i>No checks</span>
-  <span><i class="tl-sw tl-s-h"></i>Check health · failed share</span>
+  <span><i class="tl-sw tl-s-h"></i>Share of failed checks</span>
 </div></div>`;
   const q = s => root.querySelector(s);
   const rangesEl = q(".tl-ranges"), navEl = q(".tl-nav"), lineEl = q(".tl-rangeline"), stateEl = q(".tl-state"), bodyEl = q(".tl-body"), scroller = q(".tl-scroll"), chart = q(".tl-chart");
@@ -80,7 +80,7 @@ document.querySelectorAll('tr[data-href]').forEach(row => {
     if (ctl) ctl.abort();
     ctl = new AbortController();
     root.classList.add("tl-loading"); root.setAttribute("aria-busy", "true");
-    if (!model) showState("Loading the scheme timeline…");
+    if (!model) showState("Loading…");
     try {
       const res = await fetch(url(), { signal: ctl.signal, headers: { Accept: "application/json" } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -94,7 +94,7 @@ document.querySelectorAll('tr[data-href]').forEach(row => {
       if (my !== seq || (err && err.name === "AbortError")) return;
       root.classList.remove("tl-loading"); root.removeAttribute("aria-busy");
       model = null; hideTip();
-      showState("Could not load the scheme timeline.", true);
+      showState("Couldn’t load the scheme timeline.", true);
       renderNav(); renderRanges();
     }
   }
@@ -126,14 +126,14 @@ document.querySelectorAll('tr[data-href]').forEach(row => {
   function tipHtml(b, r, step, zoomable) {
     const w = when(b, step), pc = x => Math.round(x / b.n * 100) + "%";
     const head = `<div class="tl-tt-h"><b>${esc(w.date)}</b><span>${esc(w.time)}</span></div><div class="tl-tt-lane">${esc(rowName(r))}</div>`;
-    if (!b.n) return head + `<p class="tl-tt-msg">No checks in this bucket.<br>The monitor was not running.</p>`;
+    if (!b.n) return head + `<p class="tl-tt-msg">No checks in this bucket.<br>We weren’t checking then.</p>`;
     const row = (cls, label, x) => `<dt class="${x ? "" : "tl-zero"}"><i class="tl-sw ${cls}"></i>${label}</dt><dd class="${x ? "" : "tl-zero"}">${x}</dd><dd class="${x ? "" : "tl-zero"}">${pc(x)}</dd>`;
     let body;
     if (r === HEALTH()) {
-      body = `<dl class="tl-tt-rows">${row("tl-s-h", "Failed", b.f)}</dl>` + (b.f ? `<div class="tl-tt-note">Failures keep earlier evidence as stale.</div>` : "");
+      body = `<dl class="tl-tt-rows">${row("tl-s-h", "Failed", b.f)}</dl>` + (b.f ? `<div class="tl-tt-note">Earlier evidence is kept.</div>` : "");
     } else {
       const L = b.l[r];
-      body = `<dl class="tl-tt-rows">${row("tl-s-a", "Advertised", L.a)}${row("tl-s-f", "Failed", L.f)}${row("tl-s-o", "Not in declaration", L.o)}${L.n ? `<dt><i class="tl-sw"></i>Before first seen</dt><dd>${L.n}</dd><dd>${pc(L.n)}</dd>` : ""}</dl>` + (L.first ? `<div class="tl-tt-first"><i class="tl-sw tl-mk"></i>First seen in this bucket</div>` : "");
+      body = `<dl class="tl-tt-rows">${row("tl-s-a", "Advertised", L.a)}${row("tl-s-f", "Failed", L.f)}${row("tl-s-o", "Not listed", L.o)}${L.n ? `<dt><i class="tl-sw"></i>Before first seen</dt><dd>${L.n}</dd><dd>${pc(L.n)}</dd>` : ""}</dl>` + (L.first ? `<div class="tl-tt-first"><i class="tl-sw tl-mk"></i>First seen in this bucket</div>` : "");
     }
     return head + body + `<div class="tl-tt-foot">Share of ${b.n.toLocaleString("en")} checks${zoomable ? " · click or Enter to zoom" : ""}</div>`;
   }
@@ -149,7 +149,7 @@ document.querySelectorAll('tr[data-href]').forEach(row => {
       const prevOff = !Number.isFinite(firstCheck) || state.from <= Math.floor(firstCheck / D) * D, nextOff = state.to >= nowMs;
       navEl.innerHTML = `<div class="tl-stepper" role="group" aria-label="${one ? "Day" : "Period"}"><button type="button" id="scheme-timeline-prev" aria-label="Previous ${one ? "day" : "period"}" title="Previous ${one ? "day" : "period"}" ${prevOff ? "disabled" : ""}>‹</button><span class="tl-day"><b>${esc(label)}</b>${esc(stepName(step))} buckets</span><button type="button" id="scheme-timeline-next" aria-label="Next ${one ? "day" : "period"}" title="Next ${one ? "day" : "period"}" ${nextOff ? "disabled" : ""}>›</button></div><button type="button" class="tl-back" id="scheme-timeline-back">← Back to ${esc(state.range === "all" ? "All" : state.range)}</button>`;
     } else {
-      navEl.innerHTML = model && model.lanes.length ? `<span>Bucket <b>${esc(stepName(step))}</b>${zoomable ? " · click a column to zoom" : ""}</span>` : "";
+      navEl.innerHTML = model && model.lanes.length ? `<span>Bucket <b>${esc(stepName(step))}</b>${zoomable ? " · click to zoom" : ""}</span>` : "";
     }
   }
   function render(opt = {}) {
@@ -159,7 +159,7 @@ document.querySelectorAll('tr[data-href]').forEach(row => {
     renderRanges(); renderNav();
     subEl && (subEl.textContent = `Aggregated per ${stepName(step)} / UTC`);
     if (!lanes.length || !n) {
-      showState("No scheme observations yet.");
+      showState("Nothing to show yet.");
       renderNav();
       return;
     }

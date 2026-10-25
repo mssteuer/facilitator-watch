@@ -638,9 +638,9 @@ func (s *liveStore) Standards(ctx context.Context) ([]Standard, error) {
 		return nil, err
 	}
 	return []Standard{
-		{ID: "v1", Name: "x402 v1", Category: "protocol", Reference: "https://github.com/coinbase/x402/blob/main/specs/x402-specification-v1.md", Note: "Supplied research: /supported kinds[] retains legacy network identifiers."},
-		{ID: "v2", Name: "x402 v2", Category: "protocol", Reference: "https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md", Note: "Supplied research: kinds[], extensions[] and signers. Exact source fields remain in raw evidence. No payment verification."},
-		{ID: "bazaar", Name: "Bazaar", Category: "extension", Reference: "https://github.com/coinbase/x402/blob/main/specs/extensions/bazaar.md", Note: "A declaration does not establish discovery endpoint availability or behavior; discovery endpoints are not polled."},
+		{ID: "v1", Name: "x402 v1", Category: "protocol", Reference: "https://github.com/coinbase/x402/blob/main/specs/x402-specification-v1.md", Note: "The /supported list of kinds, with the older network identifiers kept as is."},
+		{ID: "v2", Name: "x402 v2", Category: "protocol", Reference: "https://github.com/coinbase/x402/blob/main/specs/x402-specification-v2.md", Note: "The /supported list of kinds, extensions and signers. Exact fields are kept in the raw response."},
+		{ID: "bazaar", Name: "Bazaar", Category: "extension", Reference: "https://github.com/coinbase/x402/blob/main/specs/extensions/bazaar.md", Note: "An optional discovery extension. Listing it doesn’t mean discovery works; we don’t check it."},
 	}, nil
 }
 

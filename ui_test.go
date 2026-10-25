@@ -46,7 +46,7 @@ func TestCompactProfileAndAdvancedDisclosure(t *testing.T) {
 		if len(parts) != 2 || !strings.Contains(parts[1], "<summary>Advanced evidence") || strings.Contains(body, "<details open") {
 			t.Fatal("missing closed native advanced disclosure")
 		}
-		for _, heading := range []string{"Declaration evidence over time", "Current capability evidence", "Raw last successful /supported", "Evidence ledger"} {
+		for _, heading := range []string{"Evidence over time", "Current capabilities", "Last valid response (raw)", "Evidence ledger"} {
 			if strings.Contains(parts[0], heading) || !strings.Contains(parts[1], heading) {
 				t.Fatalf("%s must be inside advanced evidence", heading)
 			}
@@ -61,12 +61,12 @@ func TestCompactProfileAndAdvancedDisclosure(t *testing.T) {
 		if open, shut := strings.Index(parts[0], "<noscript>"), strings.Index(parts[0], "</noscript>"); open < 0 || open > chartAt || shut < chartAt {
 			t.Fatal("server-rendered scheme chart must live in the noscript fallback")
 		}
-		for _, warning := range []string{"at least one network", "not verified payments or continuous support", "Network-specific detail is in Advanced evidence", "shares of checks, not uptime", "failed check never proves removal", "Gaps with no checks stay blank", "not a launch date"} {
+		for _, warning := range []string{"How often each scheme showed up", "Per-network detail is under Advanced evidence", "so it isn’t uptime", "doesn’t mean support was removed", "blank columns mean we weren’t checking"} {
 			if !strings.Contains(parts[0], warning) {
 				t.Fatalf("missing compact timeline caveat: %s", warning)
 			}
 		}
-		if !strings.Contains(parts[0], "Independent lists, not every possible combination") {
+		if !strings.Contains(parts[0], "These are separate lists, not every combination") {
 			t.Fatal("missing tuple-association warning")
 		}
 		if !strings.Contains(parts[0], `aria-describedby="scheme-timeline-description scheme-timeline-note"`) {
@@ -77,7 +77,7 @@ func TestCompactProfileAndAdvancedDisclosure(t *testing.T) {
 		}
 		return parts[0]
 	}
-	if body := compact(); !strings.Contains(body, "No successful declaration evidence yet.") || strings.Contains(body, "<dt>Networks</dt>") || strings.Contains(body, `class="axis-track"`) || strings.Contains(body, `class="timeline-legend`) {
+	if body := compact(); !strings.Contains(body, "No valid response yet.") || strings.Contains(body, "<dt>Networks</dt>") || strings.Contains(body, `class="axis-track"`) || strings.Contains(body, `class="timeline-legend`) {
 		t.Fatal("empty state invented declaration values")
 	}
 	at := time.Now().UTC().Add(-time.Hour)
@@ -99,13 +99,13 @@ func TestCompactProfileAndAdvancedDisclosure(t *testing.T) {
 		t.Fatal("API lost exact tuple associations")
 	}
 	recordTest(t, store, pollResult{At: at.Add(time.Minute), Error: "timeout"})
-	if body := compact(); !strings.Contains(body, "Stale evidence:") || !strings.Contains(body, "<dd>exact, upto</dd>") {
+	if body := compact(); !strings.Contains(body, "The latest check failed.") || !strings.Contains(body, "<dd>exact, upto</dd>") {
 		t.Fatal("failure must retain values with stale warning")
 	}
 	for i := 2; i <= 4; i++ {
 		recordTest(t, store, validResult(at.Add(time.Duration(i)*time.Minute), emptySnapshot))
 		body := compact()
-		if !strings.Contains(body, "advertised no kinds") || strings.Contains(body, "<dd>exact, upto</dd>") || strings.Contains(body, "Stale evidence:") {
+		if !strings.Contains(body, "The last valid response listed nothing.") || strings.Contains(body, "<dd>exact, upto</dd>") || strings.Contains(body, "The latest check failed.") {
 			t.Fatal("omitted values leaked from historical capabilities into summary")
 		}
 	}
@@ -133,7 +133,7 @@ func TestEditorialLayoutAcrossPages(t *testing.T) {
 	s := NewLiveServer(testStore(t))
 	for _, path := range []string{"/", "/?status=pending", "/facilitators/payai", "/standards", "/missing"} {
 		body := request(s, "GET", path).Body.String()
-		for _, want := range []string{`class="masthead"`, `aria-label="Main navigation"`, `href="#content"`, `id="content"`, `<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" type="image/x-icon">`, "Declarations only", "not verified payments, settlement or uninterrupted availability."} {
+		for _, want := range []string{`class="masthead"`, `aria-label="Main navigation"`, `href="#content"`, `id="content"`, `<link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" type="image/x-icon">`, "Declarations only", "We never test payments."} {
 			if !strings.Contains(body, want) {
 				t.Errorf("%s missing shared layout element %s", path, want)
 			}
@@ -155,12 +155,12 @@ func TestIndexSummaryKeepsEmptyStaleAndOmittedDistinct(t *testing.T) {
 		}
 		return w.Body.String()
 	}
-	if body := index(); strings.Contains(body, `class="index-facts"`) || strings.Contains(body, "Stale / latest check failed") {
+	if body := index(); strings.Contains(body, `class="index-facts"`) || strings.Contains(body, "Stale · last check failed") {
 		t.Fatal("pending index invented evidence")
 	}
 	at := time.Now().UTC().Add(-time.Hour)
 	recordTest(t, store, pollResult{At: at, Error: "timeout"})
-	if body := index(); strings.Contains(body, `class="index-facts"`) || strings.Contains(body, "Stale / latest check failed") {
+	if body := index(); strings.Contains(body, `class="index-facts"`) || strings.Contains(body, "Stale · last check failed") {
 		t.Fatal("failure before first success invented stale declaration")
 	}
 	recordTest(t, store, validResult(at.Add(time.Minute), v2Snapshot))
@@ -170,11 +170,11 @@ func TestIndexSummaryKeepsEmptyStaleAndOmittedDistinct(t *testing.T) {
 		}
 	}
 	recordTest(t, store, pollResult{At: at.Add(2 * time.Minute), Error: "timeout"})
-	if body := index(); !strings.Contains(body, "Stale / latest check failed") || !strings.Contains(body, "<dd>exact, upto</dd>") {
+	if body := index(); !strings.Contains(body, "Stale · last check failed") || !strings.Contains(body, "<dd>exact, upto</dd>") {
 		t.Fatal("failed check lost stale summary")
 	}
 	recordTest(t, store, validResult(at.Add(3*time.Minute), emptySnapshot))
-	if body := index(); !strings.Contains(body, "Advertised no kinds") || strings.Contains(body, `class="index-facts"`) || strings.Contains(body, "Stale / latest check failed") {
+	if body := index(); !strings.Contains(body, "Nothing advertised") || strings.Contains(body, `class="index-facts"`) || strings.Contains(body, "Stale · last check failed") {
 		t.Fatal("empty success must not use historical tuples or stale warning")
 	}
 }
